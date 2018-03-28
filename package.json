@@ -1,0 +1,25 @@
+{
+  "name": "object-hbase-mapping",
+  "version": "0.1.0",
+  "description": "An object-to-hbase mapper (like ORM is for SQL databases).",
+  "main": "src/hbase-model-repository.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exposebox/object-hbase-mapping.git"
+  },
+  "keywords": [
+    "hbase",
+    "orm",
+    "object",
+    "mapping"
+  ],
+  "author": "",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/exposebox/object-hbase-mapping/issues"
+  },
+  "homepage": "https://github.com/exposebox/object-hbase-mapping#readme"
+}
