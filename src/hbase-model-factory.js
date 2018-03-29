@@ -6,7 +6,7 @@ const HBaseModelRepository = require('./hbase-model-repository');
 
 const debug = require('debug')('object-hbase-mapping:hbase-model-factory');
 
-function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
+function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata, repositoryMixin = (x => x)) {
 
     class HBaseModel {
         constructor(data) {
@@ -110,14 +110,16 @@ function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
 
     HBaseModel.hbase = hbase;
     HBaseModel.columnFamily = columnFamily;
-    HBaseModel.keyProperties = _.where(fieldMetadata, {isKeyProperty: true});
+    HBaseModel.keyProperties =
+        _.chain(fieldMetadata).where({isKeyProperty: true}).pluck('modelName').value();
     HBaseModel.modelFieldNames = _.pluck(fieldMetadata, 'modelName');
     HBaseModel.hbaseFieldNames = _.pluck(fieldMetadata, 'hbaseName');
     HBaseModel.modelToHbaseField = _.indexBy(fieldMetadata, 'modelName');
     HBaseModel.hbaseFieldToModelField = _.indexBy(fieldMetadata, 'hbaseName');
     HBaseModel.qualifierObjects = _.map(fieldMetadata, field =>
         ({name: field.hbaseName, type: field.type}));
-    HBaseModel.repository = new HBaseModelRepository(hbase, table, HBaseModel);
+    const RepositoryClass = repositoryMixin(HBaseModelRepository);
+    HBaseModel.repository = new RepositoryClass(hbase, table, HBaseModel);
 
     return HBaseModel;
 }
