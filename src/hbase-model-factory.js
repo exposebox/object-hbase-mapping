@@ -8,14 +8,7 @@ const debug = require('debug')('object-hbase-mapping:hbase-model-factory');
 
 function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
 
-    const modelFieldNames = _.pluck(fieldMetadata, 'modelName');
-    const hbaseFieldNames = _.pluck(fieldMetadata, 'hbaseName');
-    const modelToHbaseField = _.indexBy(fieldMetadata, 'modelName');
-    const hbaseFieldToModelField = _.indexBy(fieldMetadata, 'hbaseName');
-    const getQualifierObjects = _.map(fieldMetadata, field =>
-        ({name: field.hbaseName, type: field.type}));
-
-    let HBaseModel = class HBaseModel {
+    class HBaseModel {
         constructor(data) {
             let rowKey;
 
@@ -29,7 +22,7 @@ function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
 
             _.extend(this,
                 {rowKey: rowKey},
-                _.pick(data, ...modelFieldNames));
+                _.pick(data, ...this.constructor.modelFieldNames));
         }
 
         validateRowData(data) {
@@ -76,7 +69,7 @@ function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
 
         static getObject(rowkey) {
             const get = new hbase.Get(rowkey);
-            _.each(getQualifierObjects, qual =>
+            _.each(this.constructor.qualifierObjects, qual =>
                 get.add(columnFamily, qual));
 
             return get;
@@ -85,7 +78,7 @@ function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
         static scanObject(options) {
             const scan = new hbase.Scan(options);
 
-            _.each(getQualifierObjects, qual =>
+            _.each(this.constructor.qualifierObjects, qual =>
                 scan.add(columnFamily, qual));
 
             return scan;
@@ -113,15 +106,17 @@ function HBaseModelFactory(hbase, table, columnFamily, fieldMetadata) {
         load() {
             this.constructor.repository.load(this.rowKey);
         }
-    };
+    }
 
     HBaseModel.hbase = hbase;
     HBaseModel.columnFamily = columnFamily;
     HBaseModel.keyProperties = _.where(fieldMetadata, {isKeyProperty: true});
-    HBaseModel.modelFieldNames = modelFieldNames;
-    HBaseModel.hbaseFieldNames = hbaseFieldNames;
-    HBaseModel.modelToHbaseField = modelToHbaseField;
-    HBaseModel.hbaseFieldToModelField = hbaseFieldToModelField;
+    HBaseModel.modelFieldNames = _.pluck(fieldMetadata, 'modelName');
+    HBaseModel.hbaseFieldNames = _.pluck(fieldMetadata, 'hbaseName');
+    HBaseModel.modelToHbaseField = _.indexBy(fieldMetadata, 'modelName');
+    HBaseModel.hbaseFieldToModelField = _.indexBy(fieldMetadata, 'hbaseName');
+    HBaseModel.qualifierObjects = _.map(fieldMetadata, field =>
+        ({name: field.hbaseName, type: field.type}));
     HBaseModel.repository = new HBaseModelRepository(hbase, table, HBaseModel);
 
     return HBaseModel;
