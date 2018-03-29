@@ -1,6 +1,6 @@
 {
   "name": "object-hbase-mapping",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An object-to-hbase mapper (like ORM is for SQL databases).",
   "main": "src/hbase-model-factory.js",
   "scripts": {
